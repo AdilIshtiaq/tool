@@ -1,0 +1,11 @@
+{
+  "name": "nexcraft-n8n",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "n8n start"
+  },
+  "dependencies": {
+    "n8n": "^2.35.7"
+  }
+}
