@@ -1,3 +1,5 @@
+import json
+
 from app.services.ai_provider import AllProvidersFailedError, call_structured
 
 RESPONSE_SCHEMA = {

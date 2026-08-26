@@ -1,3 +1,46 @@
+import json
+
+import httpx
+import respx
+
+OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+
+
+@respx.mock
+def test_generate_call_script_returns_full_script(client, make_lead, monkeypatch):
+    """Regression test — generate_call_script() referenced json.dumps without
+    importing json, so this endpoint 500'd on every real call, always."""
+    from app.config import get_settings
+
+    monkeypatch.setenv("OPENAI_API_KEY", "fake-key")
+    get_settings.cache_clear()
+
+    lead = make_lead(business_name="Script Test Biz")
+
+    ai_response = {
+        "opening": "Hi, this is [Your Name].",
+        "reason_for_calling": "Following up on your online presence.",
+        "business_observation": "No website listed.",
+        "value_statement": "A website would help you capture more bookings.",
+        "discovery_questions": ["How do customers find you today?"],
+        "objection_prompts": ["If busy: ask for a better time."],
+        "next_step": "Schedule a follow-up call.",
+    }
+    respx.post(OPENAI_URL).mock(
+        return_value=httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": json.dumps(ai_response)}}]},
+        )
+    )
+
+    response = client.post(f"/api/leads/{lead.id}/call-script")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["opening"] == "Hi, this is [Your Name]."
+    assert "full_text" in body
+    get_settings.cache_clear()
+
+
 def test_create_call_requires_valid_lead(client):
     response = client.post(
         "/api/calls",
