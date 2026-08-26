@@ -53,6 +53,49 @@ class TestGooglePlacesErrorHandling:
         places = client.text_search(business_type="hotels", location="Lahore")
         assert places == [{"id": "abc"}]
 
+    @respx.mock
+    def test_paginates_past_the_20_result_page_cap(self, monkeypatch):
+        import app.services.google_places as google_places_module
+
+        monkeypatch.setattr(google_places_module.time, "sleep", lambda _seconds: None)
+
+        page_one = [{"id": f"page1-{i}"} for i in range(20)]
+        page_two = [{"id": f"page2-{i}"} for i in range(20)]
+        page_three = [{"id": f"page3-{i}"} for i in range(10)]
+
+        call_count = {"n": 0}
+
+        def responder(request):
+            call_count["n"] += 1
+            if call_count["n"] == 1:
+                return httpx.Response(200, json={"places": page_one, "nextPageToken": "tok1"})
+            if call_count["n"] == 2:
+                return httpx.Response(200, json={"places": page_two, "nextPageToken": "tok2"})
+            return httpx.Response(200, json={"places": page_three})
+
+        respx.post(PLACES_URL).mock(side_effect=responder)
+
+        client = GooglePlacesClient(api_key="key")
+        places = client.text_search(business_type="hotels", location="Lahore", max_results=50)
+
+        assert len(places) == 50
+        assert call_count["n"] == 3
+
+    @respx.mock
+    def test_stops_when_google_runs_out_of_results(self, monkeypatch):
+        """Google's own cap is often well under 100 - fewer results than
+        requested is a normal outcome, not a bug, once nextPageToken is absent."""
+        import app.services.google_places as google_places_module
+
+        monkeypatch.setattr(google_places_module.time, "sleep", lambda _seconds: None)
+
+        respx.post(PLACES_URL).mock(
+            return_value=httpx.Response(200, json={"places": [{"id": "only-one"}]})
+        )
+        client = GooglePlacesClient(api_key="key")
+        places = client.text_search(business_type="hotels", location="Lahore", max_results=100)
+        assert places == [{"id": "only-one"}]
+
 
 class TestAIAnalysisErrorHandling:
     def test_missing_api_key_raises_without_network_call(self):

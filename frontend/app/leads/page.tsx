@@ -420,7 +420,7 @@ export default function LeadDiscoveryPage() {
                         id="max_results"
                         type="number"
                         min={1}
-                        max={20}
+                        max={100}
                         value={form.max_results}
                         onChange={(e) =>
                           setForm((f) => ({ ...f, max_results: e.target.value }))

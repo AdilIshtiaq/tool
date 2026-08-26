@@ -14,7 +14,7 @@ class LeadSearchRequest(BaseModel):
     radius_meters: int | None = Field(default=None, ge=1)
     keywords: str | None = None
     source: str = "google_places"
-    max_results: int = Field(default=20, ge=1, le=20)
+    max_results: int = Field(default=20, ge=1, le=100)
 
 
 class LeadUpdate(BaseModel):
@@ -89,7 +89,7 @@ class SearchConfigurationCreate(BaseModel):
     radius_meters: int | None = Field(default=None, ge=1)
     keywords: str | None = None
     source: str = "google_places"
-    max_results: int = Field(default=20, ge=1, le=20)
+    max_results: int = Field(default=20, ge=1, le=100)
 
 
 class SearchConfigurationUpdate(BaseModel):
@@ -102,7 +102,7 @@ class SearchConfigurationUpdate(BaseModel):
     longitude: float | None = None
     radius_meters: int | None = Field(default=None, ge=1)
     keywords: str | None = None
-    max_results: int | None = Field(default=None, ge=1, le=20)
+    max_results: int | None = Field(default=None, ge=1, le=100)
 
 
 class SearchConfigurationOut(BaseModel):
@@ -525,6 +525,11 @@ class SettingsOut(BaseModel):
     smtp_from_name: str
     imap_host: str
     imap_port: int
+
+
+class EnrichEmailsResponse(BaseModel):
+    checked: int
+    found: int
 
 
 class CampaignCreate(BaseModel):
