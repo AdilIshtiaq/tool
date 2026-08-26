@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models import AuditLog, Lead, LeadAnalysis, LeadQualification, Message, ServiceRecommendation
 from app.schemas import (
+    EnrichEmailsResponse,
     InboundMessageCreate,
     LeadAnalysisOut,
     LeadListResponse,
@@ -26,6 +27,7 @@ from app.schemas import (
 from app.services.ai_analysis import AIAnalysisError
 from app.services.analysis_execution import run_analysis
 from app.services.crm import record_stage_change
+from app.services.lead_enrichment import enrich_leads_missing_email
 from app.services.qualification import run_qualification
 from app.services.reply_execution import record_inbound_message
 from app.services.search_execution import execute_lead_search
@@ -74,6 +76,15 @@ def _analysis_to_out(analysis: LeadAnalysis) -> LeadAnalysisOut:
 def search_leads(payload: LeadSearchRequest, db: Session = Depends(get_db)):
     run, leads = execute_lead_search(db, payload.model_dump(), mode="manual")
     return LeadSearchResponse(run=run, leads=leads)
+
+
+@router.post("/enrich-emails", response_model=EnrichEmailsResponse)
+def enrich_emails(limit: int = 50, db: Session = Depends(get_db)):
+    """Best-effort email discovery from each lead's own website - Google
+    Places never provides emails. Safe to call repeatedly/on a schedule;
+    only ever looks at leads still missing an email."""
+    result = enrich_leads_missing_email(db, limit=limit)
+    return EnrichEmailsResponse(**result)
 
 
 @router.get("", response_model=LeadListResponse)
