@@ -311,7 +311,7 @@ export default function RepliesPage() {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label>Lead</Label>
-              <Select value={recordLeadId} onValueChange={setRecordLeadId}>
+              <Select value={recordLeadId} onValueChange={(v) => setRecordLeadId(v ?? "")}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Choose a lead">
                     {(value: string) => leadName(value)}

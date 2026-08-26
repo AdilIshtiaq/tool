@@ -1,5 +1,13 @@
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:8000";
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? "";
+
+function authHeaders(extra?: Record<string, string>): Record<string, string> {
+  return {
+    ...(API_KEY ? { "X-API-Key": API_KEY } : {}),
+    ...extra,
+  };
+}
 
 export type HealthStatus = {
   status: "ok" | "error";
@@ -44,6 +52,7 @@ export type Lead = {
   phone: string | null;
   email: string | null;
   website: string | null;
+  contact_name: string | null;
   source: string;
   source_id: string;
   source_url: string | null;
@@ -107,7 +116,10 @@ export type LeadListResponse = {
 };
 
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, { cache: "no-store" });
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    cache: "no-store",
+    headers: authHeaders(),
+  });
   if (!res.ok) {
     throw new Error(`Request to ${path} failed with status ${res.status}`);
   }
@@ -121,7 +133,7 @@ async function sendJson<T>(
 ): Promise<T> {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
+    headers: authHeaders(body ? { "Content-Type": "application/json" } : undefined),
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
@@ -163,15 +175,7 @@ export async function getLeads(params: {
 export async function searchLeads(
   payload: LeadSearchRequest
 ): Promise<LeadSearchResponse> {
-  const res = await fetch(`${API_BASE_URL}/api/leads/search`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    throw new Error(`Search request failed with status ${res.status}`);
-  }
-  return res.json() as Promise<LeadSearchResponse>;
+  return sendJson<LeadSearchResponse>("/api/leads/search", "POST", payload);
 }
 
 export async function getSearchConfigurations(): Promise<
@@ -183,59 +187,40 @@ export async function getSearchConfigurations(): Promise<
 export async function createSearchConfiguration(
   payload: SearchConfigurationCreate
 ): Promise<SearchConfiguration> {
-  const res = await fetch(`${API_BASE_URL}/api/search-configurations`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    throw new Error(`Save search failed with status ${res.status}`);
-  }
-  return res.json() as Promise<SearchConfiguration>;
+  return sendJson<SearchConfiguration>(
+    "/api/search-configurations",
+    "POST",
+    payload
+  );
 }
 
 export async function runSearchConfiguration(
   id: string
 ): Promise<SearchConfigurationRunResponse> {
-  const res = await fetch(
-    `${API_BASE_URL}/api/search-configurations/${id}/run`,
-    { method: "POST" }
+  return sendJson<SearchConfigurationRunResponse>(
+    `/api/search-configurations/${id}/run`,
+    "POST"
   );
-  if (!res.ok) {
-    throw new Error(`Run saved search failed with status ${res.status}`);
-  }
-  return res.json() as Promise<SearchConfigurationRunResponse>;
 }
 
 export async function enableAutomation(
   id: string,
   schedule: string
 ): Promise<SearchConfiguration> {
-  const res = await fetch(
-    `${API_BASE_URL}/api/search-configurations/${id}/enable`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ schedule }),
-    }
+  return sendJson<SearchConfiguration>(
+    `/api/search-configurations/${id}/enable`,
+    "POST",
+    { schedule }
   );
-  if (!res.ok) {
-    throw new Error(`Enable automation failed with status ${res.status}`);
-  }
-  return res.json() as Promise<SearchConfiguration>;
 }
 
 export async function disableAutomation(
   id: string
 ): Promise<SearchConfiguration> {
-  const res = await fetch(
-    `${API_BASE_URL}/api/search-configurations/${id}/disable`,
-    { method: "POST" }
+  return sendJson<SearchConfiguration>(
+    `/api/search-configurations/${id}/disable`,
+    "POST"
   );
-  if (!res.ok) {
-    throw new Error(`Disable automation failed with status ${res.status}`);
-  }
-  return res.json() as Promise<SearchConfiguration>;
 }
 
 export type QualificationFields = Record<string, string[]>;

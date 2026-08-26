@@ -188,7 +188,7 @@ export default function TasksPage() {
                     <div className="flex items-center gap-2">
                       <Select
                         value={task.status}
-                        onValueChange={(v) => handleStatusChange(task, v)}
+                        onValueChange={(v) => v && handleStatusChange(task, v)}
                       >
                         <SelectTrigger size="sm" className="w-[130px]">
                           <SelectValue>
@@ -231,7 +231,7 @@ export default function TasksPage() {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label>Lead</Label>
-              <Select value={leadId} onValueChange={setLeadId}>
+              <Select value={leadId} onValueChange={(v) => setLeadId(v ?? "")}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Choose a lead">
                     {(value: string) => leadName(value)}

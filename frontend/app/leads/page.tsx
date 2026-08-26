@@ -561,6 +561,7 @@ export default function LeadDiscoveryPage() {
                             <Select
                               value={scheduleChoice[config.id] ?? "hourly"}
                               onValueChange={(value) =>
+                                value &&
                                 setScheduleChoice((s) => ({
                                   ...s,
                                   [config.id]: value,

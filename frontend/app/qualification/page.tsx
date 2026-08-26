@@ -472,6 +472,7 @@ export default function QualificationPage() {
                 <Select
                   value={ruleForm.field}
                   onValueChange={(value) =>
+                    value &&
                     setRuleForm((f) => ({ ...f, field: value, operator: "" }))
                   }
                 >
@@ -492,7 +493,7 @@ export default function QualificationPage() {
                 <Select
                   value={ruleForm.operator}
                   onValueChange={(value) =>
-                    setRuleForm((f) => ({ ...f, operator: value }))
+                    value && setRuleForm((f) => ({ ...f, operator: value }))
                   }
                   disabled={!ruleForm.field}
                 >
@@ -587,7 +588,7 @@ export default function QualificationPage() {
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label>New result</Label>
-              <Select value={overrideResult} onValueChange={setOverrideResult}>
+              <Select value={overrideResult} onValueChange={(v) => setOverrideResult(v ?? "")}>
                 <SelectTrigger>
                   <SelectValue>
                     {(value: string) =>

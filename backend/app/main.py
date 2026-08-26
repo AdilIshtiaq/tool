@@ -1,8 +1,9 @@
 import logging
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.auth import verify_api_key
 from app.config import get_settings
 from app.db import check_database_connection
 from app.logging_config import configure_logging
@@ -49,15 +50,17 @@ def health_db() -> dict:
         return {"status": "error", "detail": str(exc)}
 
 
-app.include_router(leads_router.router)
-app.include_router(search_configurations_router.router)
-app.include_router(runs_router.router)
-app.include_router(qualification_rules_router.router)
-app.include_router(services_router.router)
-app.include_router(analysis_rules_router.router)
-app.include_router(templates_router.router)
-app.include_router(outreach_router.router)
-app.include_router(messages_router.router)
-app.include_router(calls_router.router)
-app.include_router(tasks_router.router)
-app.include_router(dashboard_router.router)
+_auth = [Depends(verify_api_key)]
+
+app.include_router(leads_router.router, dependencies=_auth)
+app.include_router(search_configurations_router.router, dependencies=_auth)
+app.include_router(runs_router.router, dependencies=_auth)
+app.include_router(qualification_rules_router.router, dependencies=_auth)
+app.include_router(services_router.router, dependencies=_auth)
+app.include_router(analysis_rules_router.router, dependencies=_auth)
+app.include_router(templates_router.router, dependencies=_auth)
+app.include_router(outreach_router.router, dependencies=_auth)
+app.include_router(messages_router.router, dependencies=_auth)
+app.include_router(calls_router.router, dependencies=_auth)
+app.include_router(tasks_router.router, dependencies=_auth)
+app.include_router(dashboard_router.router, dependencies=_auth)

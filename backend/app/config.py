@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     imap_host: str = ""
     imap_port: int = 993
 
+    api_key: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:

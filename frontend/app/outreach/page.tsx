@@ -253,7 +253,7 @@ export default function OutreachPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>Lead</Label>
-                <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+                <Select value={selectedLeadId} onValueChange={(v) => setSelectedLeadId(v ?? "")}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Choose a lead">
                       {(value: string) =>
@@ -275,7 +275,7 @@ export default function OutreachPage() {
                 <Label>Start from template</Label>
                 <Select
                   value={selectedTemplateId}
-                  onValueChange={applyTemplate}
+                  onValueChange={(v) => v && applyTemplate(v)}
                   disabled={!canCompose}
                 >
                   <SelectTrigger className="w-full">

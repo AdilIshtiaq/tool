@@ -180,7 +180,7 @@ export default function CallingWorkspacePage() {
           <CardContent className="pt-6">
             <div className="space-y-1.5">
               <Label>Lead</Label>
-              <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+              <Select value={selectedLeadId} onValueChange={(v) => setSelectedLeadId(v ?? "")}>
                 <SelectTrigger className="w-full sm:w-[320px]">
                   <SelectValue placeholder="Choose a lead to call">
                     {(value: string) =>
@@ -302,7 +302,9 @@ export default function CallingWorkspacePage() {
                           </Badge>
                         ) : (
                           <Select
-                            onValueChange={(v) => handleUpdateOutcome(call, v)}
+                            onValueChange={(v) =>
+                              typeof v === "string" && handleUpdateOutcome(call, v)
+                            }
                           >
                             <SelectTrigger size="sm" className="w-[140px]">
                               <SelectValue placeholder="Set outcome" />
@@ -395,7 +397,7 @@ export default function CallingWorkspacePage() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>Outcome</Label>
-                  <Select value={outcome} onValueChange={setOutcome}>
+                  <Select value={outcome} onValueChange={(v) => setOutcome(v ?? "")}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select outcome">
                         {(value: string) => OUTCOME_LABELS[value] ?? "Select outcome"}
