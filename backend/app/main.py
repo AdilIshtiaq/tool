@@ -17,6 +17,7 @@ from app.routers import qualification_rules as qualification_rules_router
 from app.routers import runs as runs_router
 from app.routers import search_configurations as search_configurations_router
 from app.routers import services as services_router
+from app.routers import settings as settings_router
 from app.routers import tasks as tasks_router
 from app.routers import templates as templates_router
 
@@ -64,3 +65,4 @@ app.include_router(messages_router.router, dependencies=_auth)
 app.include_router(calls_router.router, dependencies=_auth)
 app.include_router(tasks_router.router, dependencies=_auth)
 app.include_router(dashboard_router.router, dependencies=_auth)
+app.include_router(settings_router.router, dependencies=_auth)

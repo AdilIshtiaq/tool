@@ -511,3 +511,31 @@ class TaskOut(BaseModel):
     updated_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class SettingsOut(BaseModel):
+    google_places_api_key_set: bool
+    openai_api_key_set: bool
+    anthropic_api_key_set: bool
+    gemini_api_key_set: bool
+    smtp_host: str
+    smtp_port: int
+    smtp_user: str
+    smtp_password_set: bool
+    smtp_from_name: str
+    imap_host: str
+    imap_port: int
+
+
+class SettingsUpdate(BaseModel):
+    google_places_api_key: str | None = None
+    openai_api_key: str | None = None
+    anthropic_api_key: str | None = None
+    gemini_api_key: str | None = None
+    smtp_host: str | None = None
+    smtp_port: int | None = None
+    smtp_user: str | None = None
+    smtp_password: str | None = None
+    smtp_from_name: str | None = None
+    imap_host: str | None = None
+    imap_port: int | None = None

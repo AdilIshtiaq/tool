@@ -722,3 +722,39 @@ export async function decideRecommendation(
     payload
   );
 }
+
+export type Settings = {
+  google_places_api_key_set: boolean;
+  openai_api_key_set: boolean;
+  anthropic_api_key_set: boolean;
+  gemini_api_key_set: boolean;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_password_set: boolean;
+  smtp_from_name: string;
+  imap_host: string;
+  imap_port: number;
+};
+
+export type SettingsUpdate = Partial<{
+  google_places_api_key: string;
+  openai_api_key: string;
+  anthropic_api_key: string;
+  gemini_api_key: string;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_user: string;
+  smtp_password: string;
+  smtp_from_name: string;
+  imap_host: string;
+  imap_port: number;
+}>;
+
+export async function getSettings(): Promise<Settings> {
+  return getJson<Settings>("/api/settings");
+}
+
+export async function updateSettings(payload: SettingsUpdate): Promise<Settings> {
+  return sendJson<Settings>("/api/settings", "PATCH", payload);
+}
