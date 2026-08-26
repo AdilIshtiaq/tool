@@ -9,6 +9,7 @@ from app.db import check_database_connection
 from app.logging_config import configure_logging
 from app.routers import analysis_rules as analysis_rules_router
 from app.routers import calls as calls_router
+from app.routers import campaigns as campaigns_router
 from app.routers import dashboard as dashboard_router
 from app.routers import leads as leads_router
 from app.routers import messages as messages_router
@@ -66,3 +67,4 @@ app.include_router(calls_router.router, dependencies=_auth)
 app.include_router(tasks_router.router, dependencies=_auth)
 app.include_router(dashboard_router.router, dependencies=_auth)
 app.include_router(settings_router.router, dependencies=_auth)
+app.include_router(campaigns_router.router, dependencies=_auth)

@@ -723,6 +723,57 @@ export async function decideRecommendation(
   );
 }
 
+export type Campaign = {
+  id: string;
+  name: string;
+  template_id: string | null;
+  daily_limit: number | null;
+  is_enabled: boolean;
+  schedule: string | null;
+  last_run_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CampaignRunResult = {
+  campaign_id: string;
+  campaign_name: string;
+  sent_count: number;
+  skipped_count: number;
+  skipped_reasons: string[];
+};
+
+export async function getCampaigns(): Promise<Campaign[]> {
+  return getJson<Campaign[]>("/api/campaigns");
+}
+
+export async function createCampaign(payload: {
+  name: string;
+  template_id: string;
+  daily_limit?: number;
+}): Promise<Campaign> {
+  return sendJson<Campaign>("/api/campaigns", "POST", payload);
+}
+
+export async function updateCampaign(
+  campaignId: string,
+  payload: { name?: string; template_id?: string; daily_limit?: number }
+): Promise<Campaign> {
+  return sendJson<Campaign>(`/api/campaigns/${campaignId}`, "PATCH", payload);
+}
+
+export async function enableCampaign(campaignId: string, schedule: string): Promise<Campaign> {
+  return sendJson<Campaign>(`/api/campaigns/${campaignId}/enable`, "POST", { schedule });
+}
+
+export async function disableCampaign(campaignId: string): Promise<Campaign> {
+  return sendJson<Campaign>(`/api/campaigns/${campaignId}/disable`, "POST");
+}
+
+export async function runCampaignNow(campaignId: string): Promise<CampaignRunResult> {
+  return sendJson<CampaignRunResult>(`/api/campaigns/${campaignId}/run`, "POST");
+}
+
 export type Settings = {
   google_places_api_key_set: boolean;
   openai_api_key_set: boolean;

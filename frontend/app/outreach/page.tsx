@@ -27,14 +27,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  createCampaign,
   createTemplate,
+  disableCampaign,
+  enableCampaign,
   generateAIDraft,
+  getCampaigns,
   getLeadMessages,
   getLeads,
   getTemplates,
   previewOutreach,
+  runCampaignNow,
   sendOutreach,
   updateLead,
+  type Campaign,
+  type CampaignRunResult,
   type Lead,
   type Message,
   type Template,
@@ -45,12 +52,27 @@ import {
   CheckCircle2,
   Eye,
   Mail,
+  Megaphone,
+  Pause,
+  Play,
   Plus,
   Send,
   Sparkles,
   TestTube,
   XCircle,
+  Zap,
 } from "lucide-react";
+
+const SCHEDULE_OPTIONS = [
+  { value: "hourly", label: "Every hour" },
+  { value: "every_2_hours", label: "Every 2 hours" },
+  { value: "every_6_hours", label: "Every 6 hours" },
+  { value: "daily", label: "Daily" },
+];
+
+const SCHEDULE_LABELS: Record<string, string> = Object.fromEntries(
+  SCHEDULE_OPTIONS.map((o) => [o.value, o.label])
+);
 
 export default function OutreachPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -84,15 +106,28 @@ export default function OutreachPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaignDialogOpen, setCampaignDialogOpen] = useState(false);
+  const [newCampaignName, setNewCampaignName] = useState("");
+  const [newCampaignTemplateId, setNewCampaignTemplateId] = useState("");
+  const [newCampaignDailyLimit, setNewCampaignDailyLimit] = useState("");
+  const [savingCampaign, setSavingCampaign] = useState(false);
+  const [campaignBusyId, setCampaignBusyId] = useState<string | null>(null);
+  const [campaignScheduleChoice, setCampaignScheduleChoice] = useState<Record<string, string>>({});
+  const [campaignResults, setCampaignResults] = useState<Record<string, CampaignRunResult>>({});
+  const [campaignError, setCampaignError] = useState<string | null>(null);
+
   const loadMeta = useCallback(async () => {
     setLoadingMeta(true);
     try {
-      const [leadRes, templateRes] = await Promise.all([
+      const [leadRes, templateRes, campaignRes] = await Promise.all([
         getLeads({ page: 1, page_size: 100 }),
         getTemplates(),
+        getCampaigns(),
       ]);
       setLeads(leadRes.items);
       setTemplates(templateRes);
+      setCampaigns(campaignRes);
     } finally {
       setLoadingMeta(false);
     }
@@ -228,6 +263,70 @@ export default function OutreachPage() {
       setNewTemplateName("");
     } finally {
       setSavingTemplate(false);
+    }
+  }
+
+  async function handleCreateCampaign() {
+    if (!newCampaignName.trim() || !newCampaignTemplateId) return;
+    setSavingCampaign(true);
+    setCampaignError(null);
+    try {
+      const campaign = await createCampaign({
+        name: newCampaignName.trim(),
+        template_id: newCampaignTemplateId,
+        daily_limit: newCampaignDailyLimit ? Number(newCampaignDailyLimit) : undefined,
+      });
+      setCampaigns((c) => [campaign, ...c]);
+      setCampaignDialogOpen(false);
+      setNewCampaignName("");
+      setNewCampaignTemplateId("");
+      setNewCampaignDailyLimit("");
+    } catch (error) {
+      setCampaignError((error as Error).message);
+    } finally {
+      setSavingCampaign(false);
+    }
+  }
+
+  async function handleRunCampaign(campaignId: string) {
+    setCampaignBusyId(campaignId);
+    setCampaignError(null);
+    try {
+      const result = await runCampaignNow(campaignId);
+      setCampaignResults((r) => ({ ...r, [campaignId]: result }));
+      const updated = await getCampaigns();
+      setCampaigns(updated);
+    } catch (error) {
+      setCampaignError((error as Error).message);
+    } finally {
+      setCampaignBusyId(null);
+    }
+  }
+
+  async function handleEnableCampaign(campaignId: string) {
+    const schedule = campaignScheduleChoice[campaignId] ?? "hourly";
+    setCampaignBusyId(campaignId);
+    setCampaignError(null);
+    try {
+      const updated = await enableCampaign(campaignId, schedule);
+      setCampaigns((cs) => cs.map((c) => (c.id === updated.id ? updated : c)));
+    } catch (error) {
+      setCampaignError((error as Error).message);
+    } finally {
+      setCampaignBusyId(null);
+    }
+  }
+
+  async function handleDisableCampaign(campaignId: string) {
+    setCampaignBusyId(campaignId);
+    setCampaignError(null);
+    try {
+      const updated = await disableCampaign(campaignId);
+      setCampaigns((cs) => cs.map((c) => (c.id === updated.id ? updated : c)));
+    } catch (error) {
+      setCampaignError((error as Error).message);
+    } finally {
+      setCampaignBusyId(null);
     }
   }
 
@@ -467,6 +566,146 @@ export default function OutreachPage() {
           </CardContent>
         </Card>
 
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <div>
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Megaphone className="size-4 text-muted-foreground" />
+                Campaigns {campaigns.length > 0 ? `(${campaigns.length})` : ""}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Automatically email every approved lead using a template — on
+                demand, or on a schedule. Runs only while this app is running.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setCampaignDialogOpen(true)}
+              className="gap-2"
+              disabled={templates.length === 0}
+            >
+              <Plus className="size-4" />
+              New Campaign
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {campaignError ? (
+              <Alert variant="destructive">
+                <AlertCircle className="size-4" />
+                <AlertTitle>Action failed</AlertTitle>
+                <AlertDescription>{campaignError}</AlertDescription>
+              </Alert>
+            ) : null}
+            {templates.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                Save a template first — campaigns send an existing template to
+                approved leads automatically.
+              </p>
+            ) : campaigns.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                No campaigns yet. Create one to start auto-sending to approved leads.
+              </p>
+            ) : (
+              campaigns.map((campaign) => {
+                const template = templates.find((t) => t.id === campaign.template_id);
+                const result = campaignResults[campaign.id];
+                const busy = campaignBusyId === campaign.id;
+                return (
+                  <div key={campaign.id} className="rounded-lg border p-3 space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{campaign.name}</p>
+                          {campaign.is_enabled ? (
+                            <Badge variant="default" className="gap-1">
+                              <Zap className="size-3" />
+                              {SCHEDULE_LABELS[campaign.schedule ?? ""] ?? campaign.schedule}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline">Manual only</Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Template: {template?.name ?? "—"}
+                          {campaign.daily_limit ? ` · up to ${campaign.daily_limit}/day` : ""}
+                          {campaign.last_run_at
+                            ? ` · last run ${new Date(campaign.last_run_at).toLocaleString()}`
+                            : " · never run"}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busy}
+                          onClick={() => handleRunCampaign(campaign.id)}
+                          className="gap-2"
+                        >
+                          {busy ? <Spinner className="size-4" /> : <Send className="size-4" />}
+                          Run Now
+                        </Button>
+                        {campaign.is_enabled ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={busy}
+                            onClick={() => handleDisableCampaign(campaign.id)}
+                            className="gap-2"
+                          >
+                            <Pause className="size-4" />
+                            Disable
+                          </Button>
+                        ) : (
+                          <>
+                            <Select
+                              value={campaignScheduleChoice[campaign.id] ?? "hourly"}
+                              onValueChange={(v) =>
+                                v &&
+                                setCampaignScheduleChoice((s) => ({ ...s, [campaign.id]: v }))
+                              }
+                            >
+                              <SelectTrigger size="sm" className="w-[140px]">
+                                <SelectValue>
+                                  {(value: string) => SCHEDULE_LABELS[value] ?? value}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {SCHEDULE_OPTIONS.map((opt) => (
+                                  <SelectItem key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              size="sm"
+                              disabled={busy}
+                              onClick={() => handleEnableCampaign(campaign.id)}
+                              className="gap-2"
+                            >
+                              <Play className="size-4" />
+                              Enable Automation
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {result ? (
+                      <p className="text-sm text-muted-foreground">
+                        Last run: sent {result.sent_count}, skipped {result.skipped_count}
+                        {result.skipped_reasons.length > 0
+                          ? ` (${result.skipped_reasons[0]}${result.skipped_reasons.length > 1 ? `, +${result.skipped_reasons.length - 1} more` : ""})`
+                          : ""}
+                      </p>
+                    ) : null}
+                  </div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+
         {selectedLeadId ? (
           <Card>
             <CardHeader>
@@ -580,6 +819,72 @@ export default function OutreachPage() {
             >
               {savingTemplate ? <Spinner className="size-4" /> : null}
               Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={campaignDialogOpen} onOpenChange={setCampaignDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Campaign</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="campaign-name">Campaign name</Label>
+              <Input
+                id="campaign-name"
+                value={newCampaignName}
+                onChange={(e) => setNewCampaignName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Template to send</Label>
+              <Select
+                value={newCampaignTemplateId}
+                onValueChange={(v) => setNewCampaignTemplateId(v ?? "")}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a template">
+                    {(value: string) => templates.find((t) => t.id === value)?.name ?? "Choose a template"}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="campaign-limit">Daily send limit (optional)</Label>
+              <Input
+                id="campaign-limit"
+                type="number"
+                min={1}
+                placeholder="No limit"
+                value={newCampaignDailyLimit}
+                onChange={(e) => setNewCampaignDailyLimit(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCampaignDialogOpen(false)}
+              disabled={savingCampaign}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateCampaign}
+              disabled={savingCampaign || !newCampaignName.trim() || !newCampaignTemplateId}
+              className="gap-2"
+            >
+              {savingCampaign ? <Spinner className="size-4" /> : null}
+              Create Campaign
             </Button>
           </DialogFooter>
         </DialogContent>

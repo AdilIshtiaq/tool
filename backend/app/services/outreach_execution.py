@@ -70,6 +70,7 @@ def send_outreach(
     subject: str,
     body: str,
     template_id=None,
+    campaign_id=None,
     is_test: bool = False,
     test_email_override: str | None = None,
 ) -> Message:
@@ -85,6 +86,7 @@ def send_outreach(
     message = Message(
         lead_id=lead.id,
         template_id=template_id,
+        campaign_id=campaign_id,
         direction="outbound",
         to_email=to_email,
         subject=final_subject,
@@ -113,9 +115,16 @@ def send_outreach(
         message.status = "failed"
         message.provider_response = str(exc)
 
+    if is_test:
+        action = "outreach_test_send"
+    elif campaign_id:
+        action = "outreach_campaign_send"
+    else:
+        action = "outreach_send"
+
     db.add(
         AuditLog(
-            action="outreach_test_send" if is_test else "outreach_send",
+            action=action,
             entity_type="lead",
             entity_id=str(lead.id),
             detail={"message_id": str(message.id), "status": message.status, "to": to_email},

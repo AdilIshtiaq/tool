@@ -278,7 +278,7 @@ class SuppressedEmail(Base):
 
 
 class Campaign(Base):
-    """Outreach campaign settings. Automatic sending is a later stage — reserved here, not wired yet."""
+    """Outreach campaign settings for scheduled automatic sending to approved leads."""
 
     __tablename__ = "campaigns"
 
@@ -290,6 +290,8 @@ class Campaign(Base):
     )
     daily_limit: Mapped[int | None] = mapped_column(nullable=True)
     is_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+    schedule: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(

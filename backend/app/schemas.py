@@ -527,6 +527,45 @@ class SettingsOut(BaseModel):
     imap_port: int
 
 
+class CampaignCreate(BaseModel):
+    name: str = Field(min_length=1)
+    template_id: uuid.UUID
+    daily_limit: int | None = Field(default=None, ge=1)
+
+
+class CampaignUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1)
+    template_id: uuid.UUID | None = None
+    daily_limit: int | None = Field(default=None, ge=1)
+
+
+class CampaignOut(BaseModel):
+    id: uuid.UUID
+    name: str
+    template_id: uuid.UUID | None
+    daily_limit: int | None
+    is_enabled: bool
+    schedule: str | None
+    last_run_at: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class CampaignRunResult(BaseModel):
+    campaign_id: uuid.UUID
+    campaign_name: str
+    sent_count: int
+    skipped_count: int
+    skipped_reasons: list[str]
+
+
+class CampaignRunDueResponse(BaseModel):
+    checked: int
+    executed: list[CampaignRunResult]
+
+
 class SettingsUpdate(BaseModel):
     google_places_api_key: str | None = None
     openai_api_key: str | None = None
