@@ -35,7 +35,23 @@ router = APIRouter(prefix="/api/leads", tags=["leads"])
 
 
 def _analysis_to_out(analysis: LeadAnalysis) -> LeadAnalysisOut:
-    out = LeadAnalysisOut.model_validate(analysis)
+    # Built field-by-field rather than LeadAnalysisOut.model_validate(analysis):
+    # the ORM's ServiceRecommendation has no flat recommended_service_name
+    # attribute (only a relationship), so from_attributes validation of the
+    # nested recommendation fails before the manual rebuild below ever runs.
+    out = LeadAnalysisOut(
+        id=analysis.id,
+        lead_id=analysis.lead_id,
+        summary=analysis.summary,
+        opportunities=analysis.opportunities,
+        score=analysis.score,
+        confidence=analysis.confidence,
+        evidence=analysis.evidence,
+        missing_information=analysis.missing_information,
+        next_action=analysis.next_action,
+        needs_review=analysis.needs_review,
+        created_at=analysis.created_at,
+    )
     if analysis.recommendation:
         rec = analysis.recommendation
         out.recommendation = ServiceRecommendationOut(

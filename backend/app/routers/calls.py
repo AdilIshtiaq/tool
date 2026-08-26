@@ -86,6 +86,7 @@ def generate_script_for_lead(lead_id: uuid.UUID, db: Session = Depends(get_db)):
         script = generate_call_script(
             openai_api_key=settings.openai_api_key,
             anthropic_api_key=settings.anthropic_api_key,
+            gemini_api_key=settings.gemini_api_key,
             lead_info=lead_info,
             analysis_summary=analysis.summary if analysis else None,
             recommended_service=(

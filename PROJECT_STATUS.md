@@ -30,7 +30,7 @@ for the original blueprint this was built against.
 
 ## What's been added on top of the original blueprint
 
-- **Multi-provider AI failover** (`backend/app/services/ai_provider.py`): tries OpenAI first, falls back to Anthropic on quota/auth/server errors, raises with both failure reasons if everything fails. Adding a third provider is one function + one line in `_PROVIDERS`.
+- **Multi-provider AI failover** (`backend/app/services/ai_provider.py`): tries OpenAI → Anthropic → Gemini in order, falls through on quota/auth/server errors, raises with every failure reason if all fail. Adding a fourth provider is one function + one line in `_PROVIDERS`.
 - **Shared status/badge system** (`frontend/lib/lead-status.ts`, `frontend/components/lead-status-badge.tsx`): single source of truth for lead-status labels/colors across Leads, CRM, Analysis, Calling — previously three separate hardcoded objects had started to drift.
 - **API key auth** (`backend/app/auth.py`): `X-API-Key` header required on every data endpoint (health checks stay open). No-op when `API_KEY` is unset, so local dev without setup still works.
 - **Docker + CI**: `backend/Dockerfile`, `frontend/Dockerfile`, `docker-compose.yml`, `.github/workflows/ci.yml`.

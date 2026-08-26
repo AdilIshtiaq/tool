@@ -53,6 +53,7 @@ def draft_email(payload: AIEmailDraftRequest, db: Session = Depends(get_db)):
         draft = generate_email_draft(
             openai_api_key=settings.openai_api_key,
             anthropic_api_key=settings.anthropic_api_key,
+            gemini_api_key=settings.gemini_api_key,
             lead_info=lead_info,
             recommended_service=recommendation.recommended_service.name,
             reasoning=recommendation.reasoning,

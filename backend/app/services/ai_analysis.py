@@ -71,12 +71,13 @@ def build_user_prompt(lead_info: dict, analysis_rules: list[str], service_catalo
 def analyze_lead(
     openai_api_key: str,
     anthropic_api_key: str,
+    gemini_api_key: str,
     lead_info: dict,
     analysis_rules: list[str],
     service_catalog: list[dict],
 ) -> dict:
-    if not openai_api_key and not anthropic_api_key:
-        raise AIAnalysisError("No AI provider is configured (OpenAI or Anthropic API key required).")
+    if not openai_api_key and not anthropic_api_key and not gemini_api_key:
+        raise AIAnalysisError("No AI provider is configured (OpenAI, Anthropic, or Gemini API key required).")
     if not service_catalog:
         raise AIAnalysisError("No enabled services in the catalog to recommend from.")
 
@@ -86,7 +87,11 @@ def analyze_lead(
             user_prompt=build_user_prompt(lead_info, analysis_rules, service_catalog),
             schema_name="lead_analysis",
             json_schema=RESPONSE_SCHEMA,
-            api_keys={"openai": openai_api_key, "anthropic": anthropic_api_key},
+            api_keys={
+                "openai": openai_api_key,
+                "anthropic": anthropic_api_key,
+                "gemini": gemini_api_key,
+            },
         )
     except AllProvidersFailedError as exc:
         raise AIAnalysisError(str(exc)) from exc

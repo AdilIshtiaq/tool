@@ -43,6 +43,7 @@ def run_analysis(db: Session, lead: Lead) -> tuple[LeadAnalysis, ServiceRecommen
     result = analyze_lead(
         openai_api_key=settings.openai_api_key,
         anthropic_api_key=settings.anthropic_api_key,
+        gemini_api_key=settings.gemini_api_key,
         lead_info=_lead_info(lead),
         analysis_rules=[r.description for r in rules],
         service_catalog=catalog,

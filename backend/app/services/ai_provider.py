@@ -21,6 +21,11 @@ ANTHROPIC_MESSAGES_URL = "https://api.anthropic.com/v1/messages"
 ANTHROPIC_MODEL = "claude-3-5-haiku-20241022"
 ANTHROPIC_VERSION = "2023-06-01"
 
+GEMINI_MODEL = "gemini-3.6-flash"
+GEMINI_GENERATE_URL = (
+    f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
+)
+
 REQUEST_TIMEOUT = 60.0
 
 
@@ -38,8 +43,8 @@ class AllProvidersFailedError(Exception):
         self.attempts = attempts
         if not attempts:
             message = (
-                "No AI provider is configured. Add OPENAI_API_KEY and/or "
-                "ANTHROPIC_API_KEY to backend/.env."
+                "No AI provider is configured. Add OPENAI_API_KEY, "
+                "ANTHROPIC_API_KEY, and/or GEMINI_API_KEY to backend/.env."
             )
         else:
             details = "; ".join(f"{name}: {reason}" for name, reason in attempts)
@@ -144,12 +149,76 @@ def _call_anthropic(api_key: str, system_prompt: str, user_prompt: str, schema_n
         raise AIProviderError(f"returned unparseable output: {exc}") from exc
 
 
+def _to_gemini_schema(schema):
+    """Gemini's responseSchema is a restricted subset of JSON Schema — it
+    rejects keys like additionalProperties that OpenAI/Anthropic accept."""
+    if isinstance(schema, dict):
+        return {
+            key: _to_gemini_schema(value)
+            for key, value in schema.items()
+            if key != "additionalProperties"
+        }
+    if isinstance(schema, list):
+        return [_to_gemini_schema(item) for item in schema]
+    return schema
+
+
+def _call_gemini(api_key: str, system_prompt: str, user_prompt: str, schema_name: str, json_schema: dict) -> dict:
+    body = {
+        "system_instruction": {"parts": [{"text": system_prompt}]},
+        "contents": [{"role": "user", "parts": [{"text": user_prompt}]}],
+        "generationConfig": {
+            "responseMimeType": "application/json",
+            "responseSchema": _to_gemini_schema(json_schema),
+        },
+    }
+    headers = {"Content-Type": "application/json"}
+
+    try:
+        response = httpx.post(
+            GEMINI_GENERATE_URL,
+            params={"key": api_key},
+            json=body,
+            headers=headers,
+            timeout=REQUEST_TIMEOUT,
+        )
+    except httpx.TimeoutException as exc:
+        raise AIProviderError("request timed out") from exc
+    except httpx.RequestError as exc:
+        raise AIProviderError(f"request failed: {exc}") from exc
+
+    if response.status_code in (401, 403):
+        raise AIProviderError("authentication failed — check the API key")
+    if response.status_code == 429:
+        raise AIProviderError("rate limit exceeded")
+    if response.status_code == 400:
+        try:
+            message = response.json().get("error", {}).get("message", "")
+        except json.JSONDecodeError:
+            message = ""
+        if "api key not valid" in message.lower():
+            raise AIProviderError("authentication failed — check the API key")
+        raise AIProviderError(f"bad request: {message or response.text}")
+    if response.status_code >= 500:
+        raise AIProviderError("server error")
+    if response.status_code != 200:
+        raise AIProviderError(f"unexpected status {response.status_code}: {response.text}")
+
+    data = response.json()
+    try:
+        text = data["candidates"][0]["content"]["parts"][0]["text"]
+        return json.loads(text)
+    except (KeyError, IndexError, json.JSONDecodeError) as exc:
+        raise AIProviderError(f"returned unparseable output: {exc}") from exc
+
+
 # Registry of providers, tried in this order. Adding a new provider later is
 # one entry here plus a _call_<provider> function above — no changes needed
 # in any of the AI feature modules that call call_structured().
 _PROVIDERS = [
     ("openai", lambda key: bool(key), _call_openai),
     ("anthropic", lambda key: bool(key), _call_anthropic),
+    ("gemini", lambda key: bool(key), _call_gemini),
 ]
 
 

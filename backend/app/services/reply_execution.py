@@ -51,6 +51,7 @@ def classify_message(db: Session, message: Message) -> Message:
         result = classify_reply(
             openai_api_key=settings.openai_api_key,
             anthropic_api_key=settings.anthropic_api_key,
+            gemini_api_key=settings.gemini_api_key,
             from_email=message.from_email or "",
             subject=message.subject,
             body=message.body,

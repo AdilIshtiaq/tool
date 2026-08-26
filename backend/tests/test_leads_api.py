@@ -1,3 +1,5 @@
+import json
+
 import httpx
 import respx
 
@@ -100,3 +102,47 @@ def test_list_leads_returns_created_leads(client, make_lead):
     assert body["total"] >= 2
     names = {lead["business_name"] for lead in body["items"]}
     assert {"Alpha Cafe", "Beta Diner"}.issubset(names)
+
+
+OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+
+
+@respx.mock
+def test_analyze_lead_returns_recommendation(client, make_lead, db_session, monkeypatch):
+    from app.config import get_settings
+    from app.models import Service
+
+    monkeypatch.setenv("OPENAI_API_KEY", "fake-key")
+    get_settings.cache_clear()
+
+    service = Service(name="Website Design", description="Build a website", enabled=True)
+    db_session.add(service)
+    db_session.commit()
+
+    lead = make_lead(business_name="No Website Hotel", website=None)
+
+    ai_response = {
+        "summary": "No website, strong reviews.",
+        "opportunities": ["Build a website"],
+        "score": 75.0,
+        "confidence": 0.9,
+        "evidence": ["website is null"],
+        "missing_information": [],
+        "next_action": "Contact the owner",
+        "recommended_service": "Website Design",
+        "secondary_services": [],
+        "reasoning": "No website is the biggest gap.",
+    }
+    respx.post(OPENAI_URL).mock(
+        return_value=httpx.Response(
+            200,
+            json={"choices": [{"message": {"content": json.dumps(ai_response)}}]},
+        )
+    )
+
+    response = client.post(f"/api/leads/{lead.id}/analyze")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["summary"] == "No website, strong reviews."
+    assert body["recommendation"]["recommended_service_name"] == "Website Design"
+    get_settings.cache_clear()

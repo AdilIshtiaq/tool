@@ -45,10 +45,15 @@ class ReplyClassificationError(Exception):
 
 
 def classify_reply(
-    openai_api_key: str, anthropic_api_key: str, from_email: str, subject: str, body: str
+    openai_api_key: str,
+    anthropic_api_key: str,
+    gemini_api_key: str,
+    from_email: str,
+    subject: str,
+    body: str,
 ) -> dict:
-    if not openai_api_key and not anthropic_api_key:
-        raise ReplyClassificationError("No AI provider is configured (OpenAI or Anthropic API key required).")
+    if not openai_api_key and not anthropic_api_key and not gemini_api_key:
+        raise ReplyClassificationError("No AI provider is configured (OpenAI, Anthropic, or Gemini API key required).")
 
     user_prompt = f"From: {from_email}\nSubject: {subject}\n\nBody:\n{body}"
 
@@ -58,7 +63,11 @@ def classify_reply(
             user_prompt=user_prompt,
             schema_name="reply_classification",
             json_schema=RESPONSE_SCHEMA,
-            api_keys={"openai": openai_api_key, "anthropic": anthropic_api_key},
+            api_keys={
+                "openai": openai_api_key,
+                "anthropic": anthropic_api_key,
+                "gemini": gemini_api_key,
+            },
         )
     except AllProvidersFailedError as exc:
         raise ReplyClassificationError(str(exc)) from exc

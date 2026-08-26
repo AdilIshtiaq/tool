@@ -31,13 +31,14 @@ class AIEmailError(Exception):
 def generate_email_draft(
     openai_api_key: str,
     anthropic_api_key: str,
+    gemini_api_key: str,
     lead_info: dict,
     recommended_service: str,
     reasoning: str,
     existing_template: dict | None = None,
 ) -> dict:
-    if not openai_api_key and not anthropic_api_key:
-        raise AIEmailError("No AI provider is configured (OpenAI or Anthropic API key required).")
+    if not openai_api_key and not anthropic_api_key and not gemini_api_key:
+        raise AIEmailError("No AI provider is configured (OpenAI, Anthropic, or Gemini API key required).")
 
     prompt_parts = [
         "## Recipient business (only approved facts — do not add anything else)",
@@ -59,7 +60,11 @@ def generate_email_draft(
             user_prompt="\n".join(prompt_parts),
             schema_name="email_draft",
             json_schema=RESPONSE_SCHEMA,
-            api_keys={"openai": openai_api_key, "anthropic": anthropic_api_key},
+            api_keys={
+                "openai": openai_api_key,
+                "anthropic": anthropic_api_key,
+                "gemini": gemini_api_key,
+            },
         )
     except AllProvidersFailedError as exc:
         raise AIEmailError(str(exc)) from exc

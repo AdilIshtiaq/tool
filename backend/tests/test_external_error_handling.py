@@ -60,6 +60,7 @@ class TestAIAnalysisErrorHandling:
             analyze_lead(
                 openai_api_key="",
                 anthropic_api_key="",
+                gemini_api_key="",
                 lead_info={},
                 analysis_rules=[],
                 service_catalog=[{"name": "SEO"}],
@@ -70,6 +71,7 @@ class TestAIAnalysisErrorHandling:
             analyze_lead(
                 openai_api_key="key",
                 anthropic_api_key="",
+                gemini_api_key="",
                 lead_info={},
                 analysis_rules=[],
                 service_catalog=[],
@@ -82,6 +84,7 @@ class TestAIAnalysisErrorHandling:
             analyze_lead(
                 openai_api_key="bad",
                 anthropic_api_key="",
+                gemini_api_key="",
                 lead_info={},
                 analysis_rules=[],
                 service_catalog=[{"name": "SEO"}],
@@ -96,6 +99,7 @@ class TestAIAnalysisErrorHandling:
             analyze_lead(
                 openai_api_key="key",
                 anthropic_api_key="",
+                gemini_api_key="",
                 lead_info={},
                 analysis_rules=[],
                 service_catalog=[{"name": "SEO"}],
@@ -125,6 +129,7 @@ class TestAIAnalysisErrorHandling:
             analyze_lead(
                 openai_api_key="key",
                 anthropic_api_key="",
+                gemini_api_key="",
                 lead_info={},
                 analysis_rules=[],
                 service_catalog=[{"name": "SEO"}],
@@ -152,6 +157,7 @@ class TestAIAnalysisErrorHandling:
         result = analyze_lead(
             openai_api_key="key",
             anthropic_api_key="",
+            gemini_api_key="",
             lead_info={},
             analysis_rules=[],
             service_catalog=[{"name": "SEO"}],
@@ -191,6 +197,7 @@ class TestAIAnalysisErrorHandling:
         result = analyze_lead(
             openai_api_key="out-of-credits-key",
             anthropic_api_key="working-key",
+            gemini_api_key="",
             lead_info={},
             analysis_rules=[],
             service_catalog=[{"name": "SEO"}],
@@ -205,6 +212,7 @@ class TestAIAnalysisErrorHandling:
             analyze_lead(
                 openai_api_key="bad",
                 anthropic_api_key="also-bad",
+                gemini_api_key="",
                 lead_info={},
                 analysis_rules=[],
                 service_catalog=[{"name": "SEO"}],

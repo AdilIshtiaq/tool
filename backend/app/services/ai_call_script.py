@@ -47,13 +47,14 @@ class AICallScriptError(Exception):
 def generate_call_script(
     openai_api_key: str,
     anthropic_api_key: str,
+    gemini_api_key: str,
     lead_info: dict,
     analysis_summary: str | None,
     recommended_service: str | None,
     reasoning: str | None,
 ) -> dict:
-    if not openai_api_key and not anthropic_api_key:
-        raise AICallScriptError("No AI provider is configured (OpenAI or Anthropic API key required).")
+    if not openai_api_key and not anthropic_api_key and not gemini_api_key:
+        raise AICallScriptError("No AI provider is configured (OpenAI, Anthropic, or Gemini API key required).")
 
     prompt_parts = [
         "## Business information",
@@ -80,7 +81,11 @@ def generate_call_script(
             user_prompt="\n".join(prompt_parts),
             schema_name="call_script",
             json_schema=RESPONSE_SCHEMA,
-            api_keys={"openai": openai_api_key, "anthropic": anthropic_api_key},
+            api_keys={
+                "openai": openai_api_key,
+                "anthropic": anthropic_api_key,
+                "gemini": gemini_api_key,
+            },
         )
     except AllProvidersFailedError as exc:
         raise AICallScriptError(str(exc)) from exc
