@@ -100,7 +100,8 @@ def test_run_campaign_sends_to_approved_leads(client, make_lead, db_session, mon
     messages = client.get("/api/messages", params={"direction": "outbound"}).json()
     sent = next(m for m in messages if m["lead_id"] == str(lead.id))
     assert sent["subject"] == "noticed something specific"
-    assert sent["body"] == "a genuinely personalized email"
+    assert sent["body"].startswith("a genuinely personalized email")
+    assert "Adil Ishtiaq" in sent["body"]
 
 
 @respx.mock

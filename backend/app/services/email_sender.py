@@ -1,5 +1,6 @@
 import smtplib
 import ssl
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formataddr
 
@@ -17,13 +18,21 @@ def send_email(
     to_email: str,
     subject: str,
     body: str,
+    html_body: str | None = None,
 ) -> str:
     """Sends via SMTP and returns the provider's raw response. Does not assume delivery —
-    only that the provider accepted the message for sending."""
+    only that the provider accepted the message for sending. Sends
+    multipart/alternative (plain + html) when html_body is given, so clients
+    that can't render HTML still get a readable plain-text version."""
     if not smtp_host or not smtp_user or not smtp_password:
         raise EmailSendError("SMTP is not configured (host/user/password missing).")
 
-    message = MIMEText(body, "plain")
+    if html_body:
+        message = MIMEMultipart("alternative")
+        message.attach(MIMEText(body, "plain"))
+        message.attach(MIMEText(html_body, "html"))
+    else:
+        message = MIMEText(body, "plain")
     message["Subject"] = subject
     message["From"] = formataddr((from_name, smtp_user))
     message["To"] = to_email

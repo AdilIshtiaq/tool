@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.models import AuditLog, Lead, Message, ServiceRecommendation, SuppressedEmail
 from app.services.crm import record_stage_change
+from app.services.email_html import append_signature, render_html_email
 from app.services.email_sender import EmailSendError, send_email
 from app.services.personalization import build_personalization_context, personalize
 
@@ -32,7 +33,7 @@ def build_preview(db: Session, lead: Lead, subject: str, body: str) -> dict:
     return {
         "to_email": lead.email,
         "subject": personalize(subject, context),
-        "body": personalize(body, context),
+        "body": append_signature(personalize(body, context)),
     }
 
 
@@ -80,7 +81,7 @@ def send_outreach(
     recommendation = get_latest_recommendation(db, lead.id)
     context = build_personalization_context(lead, recommendation)
     final_subject = personalize(subject, context)
-    final_body = personalize(body, context)
+    final_body = append_signature(personalize(body, context))
     to_email = test_email_override if is_test and test_email_override else lead.email
 
     message = Message(
@@ -107,6 +108,7 @@ def send_outreach(
             to_email=to_email,
             subject=final_subject,
             body=final_body,
+            html_body=render_html_email(final_body),
         )
         message.status = "accepted_by_provider"
         message.provider_response = provider_response

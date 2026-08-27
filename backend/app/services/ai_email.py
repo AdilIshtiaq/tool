@@ -20,6 +20,8 @@ Rules you must follow:
 - Do not claim to have already worked with the business or any other company.
 - Do not mention specific prices or guarantees.
 - Keep it short (under 150 words), personalized to the specific business, and end with a clear, low-pressure call to action.
+- Do NOT include a sign-off, signature, or closing name (e.g. "Best, [Your Name]") - a real signature is
+  added automatically after your text. End on the call to action itself.
 - Write the body as plain text (no markdown), using \\n for line breaks.
 """
 
