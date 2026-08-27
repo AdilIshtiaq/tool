@@ -18,6 +18,7 @@ from app.schemas import (
     LeadSearchResponse,
     LeadUpdate,
     MessageOut,
+    ProcessNewLeadsResponse,
     QualificationOverrideRequest,
     RecommendationDecisionRequest,
     ServiceRecommendationOut,
@@ -28,6 +29,7 @@ from app.services.ai_analysis import AIAnalysisError
 from app.services.analysis_execution import run_analysis
 from app.services.crm import record_stage_change
 from app.services.lead_enrichment import enrich_leads_missing_email
+from app.services.lead_pipeline import process_new_leads
 from app.services.qualification import run_qualification
 from app.services.reply_execution import record_inbound_message
 from app.services.search_execution import execute_lead_search
@@ -85,6 +87,16 @@ def enrich_emails(limit: int = 50, db: Session = Depends(get_db)):
     only ever looks at leads still missing an email."""
     result = enrich_leads_missing_email(db, limit=limit)
     return EnrichEmailsResponse(**result)
+
+
+@router.post("/process-new", response_model=ProcessNewLeadsResponse)
+def process_new_leads_endpoint(limit: int = 50, db: Session = Depends(get_db)):
+    """Runs qualification then AI analysis automatically for every lead that
+    hasn't gone through the pipeline yet. Safe to call repeatedly - only acts
+    on leads still missing a qualification or analysis. Does not send
+    anything and does not touch approval; that stays a human decision."""
+    result = process_new_leads(db, limit=limit)
+    return ProcessNewLeadsResponse(**result)
 
 
 @router.get("", response_model=LeadListResponse)

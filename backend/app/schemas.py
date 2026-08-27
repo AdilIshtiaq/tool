@@ -358,6 +358,7 @@ class MessageOut(BaseModel):
     id: uuid.UUID
     lead_id: uuid.UUID
     template_id: uuid.UUID | None
+    campaign_id: uuid.UUID | None
     direction: str
     to_email: str | None
     from_email: str | None
@@ -530,6 +531,14 @@ class SettingsOut(BaseModel):
 class EnrichEmailsResponse(BaseModel):
     checked: int
     found: int
+
+
+class ProcessNewLeadsResponse(BaseModel):
+    qualified: int
+    not_qualified: int
+    needs_review: int
+    analyzed: int
+    analysis_errors: list[str]
 
 
 class CampaignCreate(BaseModel):
