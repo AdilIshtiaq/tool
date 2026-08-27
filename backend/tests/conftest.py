@@ -24,6 +24,21 @@ def _create_schema():
     Base.metadata.drop_all(bind=engine)
 
 
+@pytest.fixture(autouse=True)
+def _block_real_smtp(monkeypatch):
+    """Tests must never make a real outbound SMTP connection - backend/.env
+    has real production credentials, and a test send to a fake address
+    (owner@example.com, etc.) would be a real SMTP transaction against them.
+    A test that wants to exercise real send_email()/EmailSendError behavior
+    should monkeypatch this back within that test."""
+    import app.services.outreach_execution as outreach_execution_module
+
+    def _fake_send_email(**kwargs):
+        return "Accepted by SMTP server for delivery (test double - no real SMTP call made)"
+
+    monkeypatch.setattr(outreach_execution_module, "send_email", _fake_send_email)
+
+
 @pytest.fixture()
 def db_session():
     connection = engine.connect()
