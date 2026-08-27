@@ -11,7 +11,7 @@ export function AppHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-10 flex h-[72px] shrink-0 items-center gap-3 border-b bg-card/95 px-6 backdrop-blur supports-backdrop-filter:bg-card/80 md:px-8">
+    <header className="sticky top-0 z-20 flex h-[72px] shrink-0 items-center gap-3 border-b bg-card px-6 shadow-sm md:px-8">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="h-6" />
       <div className="flex min-w-0 flex-1 flex-col justify-center">
