@@ -514,6 +514,7 @@ export type InboundMessage = {
   id: string;
   lead_id: string;
   template_id: string | null;
+  campaign_id: string | null;
   direction: "outbound" | "inbound";
   to_email: string | null;
   from_email: string | null;
