@@ -3,8 +3,14 @@ from datetime import datetime, timezone
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.models import Campaign, Lead, Message, ServiceRecommendation, Template
-from app.services.outreach_execution import OutreachValidationError, send_outreach
+from app.services.ai_email import AIEmailError, generate_email_draft
+from app.services.outreach_execution import (
+    OutreachValidationError,
+    get_latest_recommendation,
+    send_outreach,
+)
 from app.services.schedule import is_due, is_valid_schedule
 
 
@@ -42,15 +48,31 @@ def _sent_today_count(db: Session, campaign_id) -> int:
     )
 
 
+def _lead_info(lead: Lead) -> dict:
+    return {
+        "business_name": lead.business_name,
+        "category": lead.category,
+        "city": lead.city,
+        "country": lead.country,
+        "website": lead.website,
+    }
+
+
 def run_campaign(db: Session, campaign: Campaign) -> dict:
-    """Sends the campaign's template to every eligible approved lead, up to the
-    daily limit. Eligibility (valid email, not suppressed, not already sent)
-    is enforced per-lead by send_outreach()'s existing validation."""
+    """Sends an AI-drafted email to every eligible approved lead, up to the
+    daily limit. Each draft is generated from that lead's own analysis
+    (recommended service + reasoning) - the campaign's template is used only
+    as a style/format reference for the AI, not sent verbatim, so every
+    email is actually personalized rather than one canned message with a
+    name swapped in. Eligibility (valid email, not suppressed, not already
+    sent) is enforced per-lead by send_outreach()'s existing validation."""
     template = db.get(Template, campaign.template_id) if campaign.template_id else None
     if not template:
         campaign.last_run_at = datetime.now(timezone.utc)
         db.commit()
         return {"sent": 0, "skipped": 0, "reasons": ["Campaign has no template configured."]}
+
+    settings = get_settings()
 
     remaining = None
     if campaign.daily_limit is not None:
@@ -65,12 +87,32 @@ def run_campaign(db: Session, campaign: Campaign) -> dict:
     for lead in get_approved_leads_for_campaign(db):
         if remaining is not None and sent >= remaining:
             break
+
+        recommendation = get_latest_recommendation(db, lead.id)
+        if not recommendation:
+            skipped_reasons.append(f"{lead.business_name}: no recommendation found")
+            continue
+
+        try:
+            draft = generate_email_draft(
+                openai_api_key=settings.openai_api_key,
+                anthropic_api_key=settings.anthropic_api_key,
+                gemini_api_key=settings.gemini_api_key,
+                lead_info=_lead_info(lead),
+                recommended_service=recommendation.recommended_service.name,
+                reasoning=recommendation.reasoning,
+                existing_template={"subject": template.subject, "body": template.body},
+            )
+        except AIEmailError as exc:
+            skipped_reasons.append(f"{lead.business_name}: AI draft failed - {exc}")
+            continue
+
         try:
             send_outreach(
                 db,
                 lead,
-                subject=template.subject,
-                body=template.body,
+                subject=draft["subject"],
+                body=draft["body"],
                 template_id=template.id,
                 campaign_id=campaign.id,
             )
