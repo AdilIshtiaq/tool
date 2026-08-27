@@ -499,6 +499,15 @@ class DashboardStatsOut(BaseModel):
     active_automation_runs: int
 
 
+class RecentActivityItem(BaseModel):
+    lead_id: uuid.UUID
+    business_name: str
+    old_stage: str | None
+    new_stage: str
+    reason: str | None
+    changed_at: datetime
+
+
 class TaskOut(BaseModel):
     id: uuid.UUID
     lead_id: uuid.UUID

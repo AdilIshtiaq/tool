@@ -5,8 +5,8 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models import Lead, Message, SearchConfiguration, Task
-from app.schemas import DashboardStatsOut
+from app.models import CRMStageHistory, Lead, Message, SearchConfiguration, Task
+from app.schemas import DashboardStatsOut, RecentActivityItem
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -46,3 +46,25 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         due_tasks=due_tasks,
         active_automation_runs=active_automation_runs,
     )
+
+
+@router.get("/recent-activity", response_model=list[RecentActivityItem])
+def get_recent_activity(limit: int = 8, db: Session = Depends(get_db)):
+    rows = db.execute(
+        select(CRMStageHistory, Lead.business_name)
+        .join(Lead, Lead.id == CRMStageHistory.lead_id)
+        .order_by(CRMStageHistory.changed_at.desc())
+        .limit(limit)
+    ).all()
+
+    return [
+        RecentActivityItem(
+            lead_id=history.lead_id,
+            business_name=business_name,
+            old_stage=history.old_stage,
+            new_stage=history.new_stage,
+            reason=history.reason,
+            changed_at=history.changed_at,
+        )
+        for history, business_name in rows
+    ]

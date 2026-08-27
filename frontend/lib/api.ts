@@ -712,6 +712,19 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   return getJson<DashboardStats>("/api/dashboard/stats");
 }
 
+export type RecentActivityItem = {
+  lead_id: string;
+  business_name: string;
+  old_stage: string | null;
+  new_stage: string;
+  reason: string | null;
+  changed_at: string;
+};
+
+export async function getRecentActivity(limit = 8): Promise<RecentActivityItem[]> {
+  return getJson<RecentActivityItem[]>(`/api/dashboard/recent-activity?limit=${limit}`);
+}
+
 export async function decideRecommendation(
   leadId: string,
   recommendationId: string,
