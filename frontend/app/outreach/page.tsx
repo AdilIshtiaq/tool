@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -341,12 +342,15 @@ export default function OutreachPage() {
       />
       <PageContainer>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Compose</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Write an email yourself, start from a template, or generate a
-              draft with AI — then preview and approve before sending.
-            </p>
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Send} color="blue" />
+            <div>
+              <CardTitle className="text-base font-semibold">Compose</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Write an email yourself, start from a template, or generate a
+                draft with AI — then preview and approve before sending.
+              </p>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -530,13 +534,16 @@ export default function OutreachPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Templates {templates.length > 0 ? `(${templates.length})` : ""}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Reusable email templates, ready to personalize for any lead.
-            </p>
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Mail} color="amber" />
+            <div>
+              <CardTitle className="text-base font-semibold">
+                Templates {templates.length > 0 ? `(${templates.length})` : ""}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Reusable email templates, ready to personalize for any lead.
+              </p>
+            </div>
           </CardHeader>
           <CardContent>
             {loadingMeta ? (
@@ -568,15 +575,17 @@ export default function OutreachPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Megaphone className="size-4 text-muted-foreground" />
-                Campaigns {campaigns.length > 0 ? `(${campaigns.length})` : ""}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Automatically email every approved lead using a template — on
-                demand, or on a schedule. Runs only while this app is running.
-              </p>
+            <div className="flex items-center gap-3">
+              <SectionIcon icon={Megaphone} color="violet" />
+              <div>
+                <CardTitle className="text-base font-semibold">
+                  Campaigns {campaigns.length > 0 ? `(${campaigns.length})` : ""}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Automatically email every approved lead using a template — on
+                  demand, or on a schedule. Runs only while this app is running.
+                </p>
+              </div>
             </div>
             <Button
               size="sm"
@@ -708,8 +717,9 @@ export default function OutreachPage() {
 
         {selectedLeadId ? (
           <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">
+            <CardHeader className="flex-row items-center gap-3 space-y-0">
+              <SectionIcon icon={Mail} color="indigo" />
+              <CardTitle className="text-base font-semibold">
                 Message Log — {selectedLead?.business_name}
               </CardTitle>
             </CardHeader>

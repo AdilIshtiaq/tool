@@ -34,7 +34,8 @@ import {
   type Task,
 } from "@/lib/api";
 import { humanize } from "@/lib/lead-status";
-import { AlertCircle, Plus, Trash2 } from "lucide-react";
+import { SectionIcon } from "@/components/ui/section-icon";
+import { AlertCircle, CheckSquare, Plus, Trash2 } from "lucide-react";
 
 const PRIORITY_VARIANT: Record<string, "default" | "destructive" | "secondary"> = {
   low: "secondary",
@@ -125,13 +126,16 @@ export default function TasksPage() {
       <PageContainer>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <div>
-              <CardTitle className="text-sm font-medium">
-                Tasks {tasks.length > 0 ? `(${tasks.length})` : ""}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Follow-ups and to-dos tied to a specific lead.
-              </p>
+            <div className="flex items-center gap-3">
+              <SectionIcon icon={CheckSquare} color="emerald" />
+              <div>
+                <CardTitle className="text-base font-semibold">
+                  Tasks {tasks.length > 0 ? `(${tasks.length})` : ""}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Follow-ups and to-dos tied to a specific lead.
+                </p>
+              </div>
             </div>
             <Button size="sm" onClick={() => setDialogOpen(true)} className="gap-2">
               <Plus className="size-4" />

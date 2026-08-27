@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -15,7 +16,7 @@ import {
   type Lead,
 } from "@/lib/api";
 import { humanize } from "@/lib/lead-status";
-import { Mail, Megaphone, TestTube } from "lucide-react";
+import { Mail, MailCheck, Megaphone, TestTube } from "lucide-react";
 
 export default function SentMailPage() {
   const [messages, setMessages] = useState<InboundMessage[]>([]);
@@ -62,14 +63,17 @@ export default function SentMailPage() {
       />
       <PageContainer>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Sent Mail {messages.length > 0 ? `(${messages.length})` : ""}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {sentCount} accepted for delivery
-              {messages.length !== sentCount ? `, ${messages.length - sentCount} other` : ""}.
-            </p>
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={MailCheck} color="emerald" />
+            <div>
+              <CardTitle className="text-base font-semibold">
+                Sent Mail {messages.length > 0 ? `(${messages.length})` : ""}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {sentCount} accepted for delivery
+                {messages.length !== sentCount ? `, ${messages.length - sentCount} other` : ""}.
+              </p>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (

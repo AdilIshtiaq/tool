@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,8 +33,11 @@ import {
 import { LeadStatusBadge } from "@/components/lead-status-badge";
 import {
   AlertCircle,
+  Building2,
+  History,
   Mail,
   MapPin,
+  NotebookPen,
   Phone,
   Sparkles,
   User,
@@ -212,9 +216,10 @@ export default function CallingWorkspacePage() {
         ) : lead ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex-row items-center gap-3 space-y-0">
+                <SectionIcon icon={Building2} color="indigo" />
                 <div className="flex items-center gap-2">
-                  <CardTitle className="text-sm font-medium">
+                  <CardTitle className="text-base font-semibold">
                     {lead.business_name}
                   </CardTitle>
                   <LeadStatusBadge status={lead.status} />
@@ -236,13 +241,16 @@ export default function CallingWorkspacePage() {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Intelligence
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  What the AI knows about this business.
-                </p>
+              <CardHeader className="flex-row items-center gap-3 space-y-0">
+                <SectionIcon icon={Sparkles} color="violet" />
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Intelligence
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    What the AI knows about this business.
+                  </p>
+                </div>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 {analysis ? (
@@ -276,13 +284,16 @@ export default function CallingWorkspacePage() {
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">
-                  Call History
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Every past call and its outcome, most recent first.
-                </p>
+              <CardHeader className="flex-row items-center gap-3 space-y-0">
+                <SectionIcon icon={History} color="slate" />
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Call History
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Every past call and its outcome, most recent first.
+                  </p>
+                </div>
               </CardHeader>
               <CardContent className="space-y-2">
                 {workspace && workspace.calls.length === 0 ? (
@@ -333,14 +344,17 @@ export default function CallingWorkspacePage() {
         {lead ? (
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle className="text-sm font-medium">
-                  Call Script &amp; Notes
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Fully editable — use the AI draft as a starting point, not a
-                  script to read verbatim.
-                </p>
+              <div className="flex items-center gap-3">
+                <SectionIcon icon={NotebookPen} color="amber" />
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Call Script &amp; Notes
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Fully editable — use the AI draft as a starting point, not a
+                    script to read verbatim.
+                  </p>
+                </div>
               </div>
               <Button
                 size="sm"

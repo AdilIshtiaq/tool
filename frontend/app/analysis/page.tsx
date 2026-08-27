@@ -38,14 +38,18 @@ import {
   type Service,
 } from "@/lib/api";
 import { LeadStatusBadge } from "@/components/lead-status-badge";
+import { SectionIcon } from "@/components/ui/section-icon";
 import {
   AlertCircle,
   CheckCircle2,
+  Layers,
+  ListChecks,
   Plus,
   Sparkles,
   ThumbsDown,
   ThumbsUp,
   Trash2,
+  Users,
 } from "lucide-react";
 
 export default function AnalysisPage() {
@@ -210,13 +214,16 @@ export default function AnalysisPage() {
       <PageContainer>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">
-                Service Catalog
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                The AI can only recommend services enabled here.
-              </p>
+            <CardHeader className="flex-row items-center gap-3 space-y-0">
+              <SectionIcon icon={Layers} color="blue" />
+              <div>
+                <CardTitle className="text-base font-semibold">
+                  Service Catalog
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  The AI can only recommend services enabled here.
+                </p>
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               {loadingMeta ? (
@@ -266,13 +273,16 @@ export default function AnalysisPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle className="text-sm font-medium">
-                  Analysis Guidance Rules
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Optional instructions that steer how the AI evaluates a lead.
-                </p>
+              <div className="flex items-center gap-3">
+                <SectionIcon icon={ListChecks} color="emerald" />
+                <div>
+                  <CardTitle className="text-base font-semibold">
+                    Analysis Guidance Rules
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Optional instructions that steer how the AI evaluates a lead.
+                  </p>
+                </div>
               </div>
               <Button
                 size="sm"
@@ -338,14 +348,17 @@ export default function AnalysisPage() {
         ) : null}
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Leads {leads.length > 0 ? `(${leads.length})` : ""}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Run AI analysis to get an opportunity score, evidence, and a
-              recommended service for each lead.
-            </p>
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Users} color="indigo" />
+            <div>
+              <CardTitle className="text-base font-semibold">
+                Leads {leads.length > 0 ? `(${leads.length})` : ""}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Run AI analysis to get an opportunity score, evidence, and a
+                recommended service for each lead.
+              </p>
+            </div>
           </CardHeader>
           <CardContent>
             {loadingLeads ? (

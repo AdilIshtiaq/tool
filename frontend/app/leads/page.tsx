@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,6 +62,7 @@ import {
   Play,
   Search,
   SlidersHorizontal,
+  Users,
   Zap,
   ZapOff,
 } from "lucide-react";
@@ -303,14 +305,17 @@ export default function LeadDiscoveryPage() {
       />
       <PageContainer>
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Find Leads
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Search by business type and location, or pin an exact point with
-              coordinates for more precise results.
-            </p>
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Search} color="blue" />
+            <div>
+              <CardTitle className="text-base font-semibold">
+                Find Leads
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Search by business type and location, or pin an exact point with
+                coordinates for more precise results.
+              </p>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <form onSubmit={handleSearch} className="space-y-4">
@@ -471,13 +476,16 @@ export default function LeadDiscoveryPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Saved Searches
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Re-run a saved search on demand, or automate it on a schedule.
-            </p>
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Bookmark} color="amber" />
+            <div>
+              <CardTitle className="text-base font-semibold">
+                Saved Searches
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Re-run a saved search on demand, or automate it on a schedule.
+              </p>
+            </div>
           </CardHeader>
           <CardContent>
             {loadingConfigs ? (
@@ -622,9 +630,10 @@ export default function LeadDiscoveryPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Users} color="indigo" />
             <div>
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-base font-semibold">
                 Leads {total > 0 ? `(${total})` : ""}
               </CardTitle>
               <p className="text-sm text-muted-foreground">

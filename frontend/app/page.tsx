@@ -12,6 +12,7 @@ import {
   type RecentActivityItem,
 } from "@/lib/api";
 import { LeadStatusBadge } from "@/components/lead-status-badge";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { getLeadStatusMeta } from "@/lib/lead-status";
 import {
   Activity,
@@ -77,14 +78,6 @@ function StatCard({
   );
 }
 
-function SectionIcon({ icon: Icon }: { icon: typeof Activity }) {
-  return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/15 to-accent-foreground/10">
-      <Icon className="size-4.5 text-primary" />
-    </div>
-  );
-}
-
 function StatusRow({ title, result }: { title: string; result: HealthStatus }) {
   const ok = result.status === "ok";
   return (
@@ -102,39 +95,51 @@ function StatusRow({ title, result }: { title: string; result: HealthStatus }) {
   );
 }
 
-type FunnelStage = { label: string; value: number };
+type FunnelStage = { label: string; value: number; barClass: string };
+
+const FUNNEL_BAR_CLASSES = [
+  "bg-blue-500",
+  "bg-indigo-500",
+  "bg-violet-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+];
 
 function PipelineFunnel({ stats }: { stats: DashboardStats }) {
   const stages: FunnelStage[] = [
-    { label: "New", value: stats.total_leads },
-    { label: "Qualified", value: stats.qualified },
-    { label: "Contacted", value: stats.contacted },
-    { label: "Meetings", value: stats.meetings },
-    { label: "Won", value: stats.won },
+    { label: "New", value: stats.total_leads, barClass: FUNNEL_BAR_CLASSES[0] },
+    { label: "Qualified", value: stats.qualified, barClass: FUNNEL_BAR_CLASSES[1] },
+    { label: "Contacted", value: stats.contacted, barClass: FUNNEL_BAR_CLASSES[2] },
+    { label: "Meetings", value: stats.meetings, barClass: FUNNEL_BAR_CLASSES[3] },
+    { label: "Won", value: stats.won, barClass: FUNNEL_BAR_CLASSES[4] },
   ];
   const baseline = stages[0].value || 1;
   const maxBarHeight = 140;
 
   return (
-    <div className="grid grid-cols-5 items-end gap-3 pt-4" style={{ height: maxBarHeight + 70 }}>
-      {stages.map((stage, i) => {
-        const pct = Math.round((stage.value / baseline) * 100);
-        const barHeight = Math.max((stage.value / baseline) * maxBarHeight, stage.value > 0 ? 6 : 2);
-        const opacity = 1 - i * 0.15;
-        return (
-          <div key={stage.label} className="flex h-full flex-col justify-end">
-            <div className="mb-2">
-              <p className="text-[11px] text-muted-foreground">{stage.label}</p>
-              <p className="text-sm font-semibold tabular-nums">{pct}%</p>
-              <p className="text-[11px] text-muted-foreground tabular-nums">{stage.value}</p>
+    <div className="overflow-x-auto">
+      <div
+        className="grid grid-cols-5 items-end gap-3 pt-4"
+        style={{ height: maxBarHeight + 70, minWidth: 380 }}
+      >
+        {stages.map((stage) => {
+          const pct = Math.round((stage.value / baseline) * 100);
+          const barHeight = Math.max((stage.value / baseline) * maxBarHeight, stage.value > 0 ? 6 : 2);
+          return (
+            <div key={stage.label} className="flex h-full flex-col justify-end">
+              <div className="mb-2">
+                <p className="whitespace-nowrap text-[11px] text-muted-foreground">{stage.label}</p>
+                <p className="text-sm font-semibold tabular-nums">{pct}%</p>
+                <p className="text-[11px] text-muted-foreground tabular-nums">{stage.value}</p>
+              </div>
+              <div
+                className={`w-full rounded-md ${stage.barClass}`}
+                style={{ height: barHeight }}
+              />
             </div>
-            <div
-              className="w-full rounded-md bg-primary"
-              style={{ height: barHeight, opacity }}
-            />
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -238,7 +243,7 @@ export default async function DashboardPage() {
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               <Card className="lg:col-span-2">
                 <CardHeader className="flex-row items-center gap-3 space-y-0">
-                  <SectionIcon icon={Activity} />
+                  <SectionIcon icon={Activity} color="blue" />
                   <div>
                     <CardTitle className="text-base font-semibold">Pipeline Funnel</CardTitle>
                     <p className="text-sm text-muted-foreground">
@@ -253,7 +258,7 @@ export default async function DashboardPage() {
 
               <Card>
                 <CardHeader className="flex-row items-center gap-3 space-y-0">
-                  <SectionIcon icon={Radio} />
+                  <SectionIcon icon={Radio} color="violet" />
                   <div>
                     <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
                     <p className="text-sm text-muted-foreground">
@@ -292,7 +297,7 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader className="flex-row items-center gap-3 space-y-0">
-            <SectionIcon icon={Server} />
+            <SectionIcon icon={Server} color="slate" />
             <CardTitle className="text-base font-semibold">System Status</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-2 sm:grid-cols-3">

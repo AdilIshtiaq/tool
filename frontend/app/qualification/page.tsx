@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,10 +52,12 @@ import {
   AlertCircle,
   CheckCircle2,
   HelpCircle,
+  ListChecks,
   Pencil,
   Plus,
   ShieldQuestion,
   Trash2,
+  Users,
   XCircle,
 } from "lucide-react";
 
@@ -275,9 +278,12 @@ export default function QualificationPage() {
       <PageContainer>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium">
-              Qualification Rules
-            </CardTitle>
+            <div className="flex items-center gap-3">
+              <SectionIcon icon={ListChecks} color="emerald" />
+              <CardTitle className="text-base font-semibold">
+                Qualification Rules
+              </CardTitle>
+            </div>
             <Button size="sm" onClick={openNewRuleDialog} className="gap-2">
               <Plus className="size-4" />
               Add Rule
@@ -347,8 +353,9 @@ export default function QualificationPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Users} color="indigo" />
+            <CardTitle className="text-base font-semibold">
               Leads {leads.length > 0 ? `(${leads.length})` : ""}
             </CardTitle>
           </CardHeader>

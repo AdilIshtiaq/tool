@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -166,10 +167,10 @@ export default function SettingsPage() {
         ) : (
           <>
             <Card>
-              <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-                <KeyRound className="size-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+                <SectionIcon icon={KeyRound} color="violet" />
                 <div>
-                  <CardTitle className="text-sm font-medium">AI Provider Keys</CardTitle>
+                  <CardTitle className="text-base font-semibold">AI Provider Keys</CardTitle>
                   <p className="text-sm text-muted-foreground">
                     Tried in order — OpenAI, then Anthropic, then Gemini — so a key
                     running out of credit fails over to the next automatically.
@@ -228,10 +229,10 @@ export default function SettingsPage() {
             </Card>
 
             <Card>
-              <CardHeader className="flex flex-row items-center gap-2 space-y-0">
-                <Mail className="size-4 text-muted-foreground" />
+              <CardHeader className="flex flex-row items-center gap-3 space-y-0">
+                <SectionIcon icon={Mail} color="blue" />
                 <div>
-                  <CardTitle className="text-sm font-medium">Email (SMTP / IMAP)</CardTitle>
+                  <CardTitle className="text-base font-semibold">Email (SMTP / IMAP)</CardTitle>
                   <p className="text-sm text-muted-foreground">
                     SMTP sends outreach emails; IMAP polls for replies.
                   </p>

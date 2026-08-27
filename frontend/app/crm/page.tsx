@@ -6,6 +6,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
+import { SectionIcon } from "@/components/ui/section-icon";
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ import {
   type Lead,
   type TimelineEvent,
 } from "@/lib/api";
+import { History } from "lucide-react";
 import { LeadStatusBadge } from "@/components/lead-status-badge";
 import { LEAD_STATUS_META, getLeadStatusMeta } from "@/lib/lead-status";
 
@@ -155,8 +157,9 @@ export default function CRMPage() {
             ) : null}
 
             <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">Timeline</CardTitle>
+              <CardHeader className="flex-row items-center gap-3 space-y-0">
+                <SectionIcon icon={History} color="slate" />
+                <CardTitle className="text-base font-semibold">Timeline</CardTitle>
               </CardHeader>
               <CardContent>
                 {loadingTimeline ? (

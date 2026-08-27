@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { PageContainer } from "@/components/layout/page-container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionIcon } from "@/components/ui/section-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +35,7 @@ import {
   type InboundMessage,
   type Lead,
 } from "@/lib/api";
-import { AlertCircle, Mail, RefreshCw, Sparkles } from "lucide-react";
+import { AlertCircle, Inbox, Mail, RefreshCw, Sparkles } from "lucide-react";
 
 const CATEGORY_VARIANT: Record<string, "default" | "destructive" | "secondary"> = {
   Positive: "default",
@@ -151,9 +152,12 @@ export default function RepliesPage() {
       <PageContainer>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-medium">
-              Inbox Polling
-            </CardTitle>
+            <div className="flex items-center gap-3">
+              <SectionIcon icon={Inbox} color="blue" />
+              <CardTitle className="text-base font-semibold">
+                Inbox Polling
+              </CardTitle>
+            </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -211,14 +215,17 @@ export default function RepliesPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">
-              Replies {messages.length > 0 ? `(${messages.length})` : ""}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Classify each reply to see the sender's intent and a suggested
-              next step.
-            </p>
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Mail} color="violet" />
+            <div>
+              <CardTitle className="text-base font-semibold">
+                Replies {messages.length > 0 ? `(${messages.length})` : ""}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Classify each reply to see the sender's intent and a suggested
+                next step.
+              </p>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
