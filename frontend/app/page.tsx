@@ -14,12 +14,15 @@ import {
 import { LeadStatusBadge } from "@/components/lead-status-badge";
 import { getLeadStatusMeta } from "@/lib/lead-status";
 import {
+  Activity,
+  CalendarDays,
   CheckCircle2,
   ClipboardList,
   HelpCircle,
   Mail,
   PhoneCall,
   Radio,
+  Server,
   ShieldCheck,
   ThumbsDown,
   ThumbsUp,
@@ -36,35 +39,49 @@ async function safeCheck(check: () => Promise<HealthStatus>): Promise<HealthStat
   }
 }
 
+const statColorClasses = {
+  blue: "bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400",
+  indigo: "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400",
+  violet: "bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400",
+  emerald: "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400",
+  amber: "bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400",
+  rose: "bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400",
+  slate: "bg-slate-100 text-slate-600 dark:bg-slate-500/15 dark:text-slate-400",
+} as const;
+
+type StatColor = keyof typeof statColorClasses;
+
 function StatCard({
   title,
   value,
   icon: Icon,
-  tone = "default",
+  color = "slate",
 }: {
   title: string;
   value: number;
   icon: typeof Users;
-  tone?: "default" | "positive" | "negative";
+  color?: StatColor;
 }) {
-  const iconClasses =
-    tone === "positive"
-      ? "bg-primary/10 text-primary"
-      : tone === "negative"
-        ? "bg-destructive/10 text-destructive"
-        : "bg-muted text-muted-foreground";
   return (
     <Card>
-      <CardContent className="flex items-center justify-between p-4">
-        <div>
-          <p className="text-xs text-muted-foreground">{title}</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+      <CardContent className="flex items-start justify-between gap-3 p-4">
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="mt-1.5 text-3xl font-bold tabular-nums">{value.toLocaleString()}</p>
         </div>
-        <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${iconClasses}`}>
-          <Icon className="size-4.5" />
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${statColorClasses[color]}`}>
+          <Icon className="size-5" />
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function SectionIcon({ icon: Icon }: { icon: typeof Activity }) {
+  return (
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary/15 to-accent-foreground/10">
+      <Icon className="size-4.5 text-primary" />
+    </div>
   );
 }
 
@@ -161,40 +178,53 @@ export default async function DashboardPage() {
 
   const pipelineCards = stats
     ? [
-        { title: "Total Leads", value: stats.total_leads, icon: Users, tone: "default" as const },
-        { title: "New Leads", value: stats.new_leads, icon: Radio, tone: "default" as const },
-        { title: "Qualified", value: stats.qualified, icon: ShieldCheck, tone: "positive" as const },
-        { title: "Needs Review", value: stats.needs_review, icon: HelpCircle, tone: "default" as const },
-        { title: "Contacted", value: stats.contacted, icon: Mail, tone: "default" as const },
+        { title: "Total Leads", value: stats.total_leads, icon: Users, color: "blue" as const },
+        { title: "New Leads", value: stats.new_leads, icon: Radio, color: "indigo" as const },
+        { title: "Qualified", value: stats.qualified, icon: ShieldCheck, color: "emerald" as const },
+        { title: "Needs Review", value: stats.needs_review, icon: HelpCircle, color: "amber" as const },
+        { title: "Contacted", value: stats.contacted, icon: Mail, color: "violet" as const },
       ]
     : [];
 
   const outcomeCards = stats
     ? [
-        { title: "Replies", value: stats.replies, icon: Mail, tone: "default" as const },
-        { title: "Meetings", value: stats.meetings, icon: PhoneCall, tone: "positive" as const },
-        { title: "Won", value: stats.won, icon: Trophy, tone: "positive" as const },
-        { title: "Lost", value: stats.lost, icon: ThumbsDown, tone: "negative" as const },
+        { title: "Replies", value: stats.replies, icon: Mail, color: "blue" as const },
+        { title: "Meetings", value: stats.meetings, icon: PhoneCall, color: "violet" as const },
+        { title: "Won", value: stats.won, icon: Trophy, color: "emerald" as const },
+        { title: "Lost", value: stats.lost, icon: ThumbsDown, color: "rose" as const },
       ]
     : [];
 
   const opsCards = stats
     ? [
-        { title: "Due Tasks", value: stats.due_tasks, icon: ClipboardList, tone: "default" as const },
+        { title: "Due Tasks", value: stats.due_tasks, icon: ClipboardList, color: "slate" as const },
         {
           title: "Active Automations",
           value: stats.active_automation_runs,
           icon: ThumbsUp,
-          tone: "default" as const,
+          color: "amber" as const,
         },
       ]
     : [];
+
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <>
       <AppHeader
         title="Dashboard"
         description="Real-time overview of the sales pipeline"
+        actions={
+          <div className="hidden items-center gap-2 rounded-lg border bg-card px-3 py-2 shadow-sm sm:inline-flex">
+            <CalendarDays className="size-4 text-muted-foreground" />
+            <span className="text-sm font-medium">{today}</span>
+          </div>
+        }
       />
       <PageContainer>
         {stats ? (
@@ -207,11 +237,14 @@ export default async function DashboardPage() {
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
               <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium">Pipeline Funnel</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Share of all leads reaching each stage.
-                  </p>
+                <CardHeader className="flex-row items-center gap-3 space-y-0">
+                  <SectionIcon icon={Activity} />
+                  <div>
+                    <CardTitle className="text-base font-semibold">Pipeline Funnel</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Share of all leads reaching each stage.
+                    </p>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <PipelineFunnel stats={stats} />
@@ -219,11 +252,14 @@ export default async function DashboardPage() {
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Latest pipeline stage changes.
-                  </p>
+                <CardHeader className="flex-row items-center gap-3 space-y-0">
+                  <SectionIcon icon={Radio} />
+                  <div>
+                    <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Latest pipeline stage changes.
+                    </p>
+                  </div>
                 </CardHeader>
                 <CardContent className="divide-y">
                   {activity.length === 0 ? (
@@ -255,8 +291,9 @@ export default async function DashboardPage() {
         )}
 
         <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">System Status</CardTitle>
+          <CardHeader className="flex-row items-center gap-3 space-y-0">
+            <SectionIcon icon={Server} />
+            <CardTitle className="text-base font-semibold">System Status</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             <StatusRow title="FastAPI Backend" result={apiHealth} />

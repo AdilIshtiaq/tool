@@ -51,7 +51,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="px-3 py-4">
         <div className="flex items-center gap-2.5 px-1">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent-foreground text-sm font-bold text-primary-foreground shadow-sm">
             NC
           </div>
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
